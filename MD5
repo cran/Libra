@@ -1,0 +1,15 @@
+c87a15095cadbbb50f9887f1561633e4 *DESCRIPTION
+d457092b50bd9ceffa6cabaa37db5e49 *NAMESPACE
+1bd1c356a28c06a7584293c29d80e712 *R/LB.R
+996d7e332e8e921b4d49074592c6074e *R/plot.LB.R
+e68a425fe1f250d062cd69c4e3e8769a *data/diabetes.RData
+a59a971d2db2d495d8643b17dec44888 *man/LB.Rd
+55bad00f64600e63734911fcb347f945 *man/diabetes.Rd
+1f52c30c51bbdd61a9ae6972a770bb4c *man/plot.LB.Rd
+a37d01a0394a4bca740e7a7863e5ee02 *src/LBLasso.c
+9b0510bcc8787b1a4228b1a24b1b8ccb *src/LBheader.c
+039be2af50b957f97a8cafa64d99b0d5 *src/LBheader.h
+aa5171aee1738590c9167a75dc649aed *src/LBlogistic.c
+323fa69ae4430f6e2e442461b6a0f0d5 *src/LBmultilogistic.c
+a5deef8d14485de8b492e4fe999bab81 *src/Makevars
+522a983bfa0e72287ffe76f687c36520 *src/Makevars.win

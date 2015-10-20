@@ -1,0 +1,7 @@
+useDynLib(Libra)
+importFrom(utils,packageDescription)
+importFrom("graphics", "abline", "axis", "matplot", "title")
+export(LB,plot.LB)
+
+S3method("plot","LB")
+
