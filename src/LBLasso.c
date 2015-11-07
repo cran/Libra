@@ -14,15 +14,12 @@
 
 void LB_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*intercept)
 {
-    int row, col, m = *row_r, n = *col_r, iter=0, sign=*intercept;
+    int m = *row_r, n = *col_r, iter=0, sign=*intercept;
     double kappa = *kappa_r, alpha = *alpha_r,temp = 0;
     gsl_matrix *A = gsl_matrix_calloc(m, n+sign);
     gsl_vector *b = gsl_vector_calloc(m);
-    for(int i=0;i< m*n; ++i){
-        row = i % m;
-        col = floor(i/m);
-        gsl_matrix_set(A, row, col, A_r[i]);
-    }
+    
+    read_matrix(A_r, A, m, n, 0);
     for(int i=0; i<m; ++i)
         gsl_vector_set(b, i, y_r[i]);
     if(sign==1){
@@ -67,15 +64,12 @@ void LB_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, do
 
 void LB_group_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*group_split, int*group_split_length, int*intercept)
 {
-    int row, col, m = *row_r, n = *col_r, iter=0, sign=*intercept;
+    int m = *row_r, n = *col_r, iter=0, sign=*intercept;
     double kappa = *kappa_r, alpha = *alpha_r,temp = 0;
     gsl_matrix *A = gsl_matrix_calloc(m, n+sign);
     gsl_vector *b = gsl_vector_calloc(m);
-    for(int i=0;i< m*n; ++i){
-        row = i % m;
-        col = floor(i/m);
-        gsl_matrix_set(A, row, col, A_r[i]);
-    }
+    
+    read_matrix(A_r, A, m, n, 0);
     for(int i=0; i<m; ++i)
         gsl_vector_set(b, i, y_r[i]);
     if(sign==1){

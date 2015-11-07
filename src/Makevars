@@ -1,1 +1,6 @@
-PKG_LIBS = -lgsl -lgslcblas -lm
+#GSL_CFLAGS = @GSL_CFLAGS@
+#GSL_LIBS   = @GSL_LIBS@
+#PKG_CPPFLAGS =  $(GSL_CFLAGS) -I.
+#PKG_LIBS = $(GSL_LIBS)
+
+PKG_LIBS = -L/usr/local/lib -lgsl -lgslcblas

@@ -13,17 +13,15 @@
 
 void LB_multi_logistic_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*category, double* kappa_r, double*alpha_r, int*iter_r, double*result_r,int*intercept)
 {
-    int row, col, n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
+    int n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
     double kappa = *kappa_r, alpha=*alpha_r;
     gsl_matrix *X = gsl_matrix_calloc(n, d+sign);
     gsl_matrix *Y = gsl_matrix_calloc(r, n);
     gsl_vector *temp = gsl_vector_calloc(r);
-    for(int i=0;i< n*d; ++i){
-        row = i % n;
-        col = floor(i/n);
-        gsl_matrix_set(X, row, col, X_r[i]);
-    }
-    dummy_generation(Y_r, Y, &n);
+    
+    read_matrix(X_r, X, n, d, 0);
+    read_matrix(Y_r, Y, n, r, 1);
+    
     if(sign==1){
         gsl_vector * one = gsl_vector_calloc(n);
         
@@ -58,19 +56,16 @@ void LB_multi_logistic_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*
     }
 }
 
-void LB_multi_logistic_group_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*category, double* kappa_r, double*alpha_r, int*iter_r, double*result_r,int*intercept)
+void LB_multi_logistic_column_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*category, double* kappa_r, double*alpha_r, int*iter_r, double*result_r,int*intercept)
 {
-    int row, col, n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
+    int n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
     double kappa = *kappa_r,alpha=*alpha_r;
     gsl_matrix *X = gsl_matrix_calloc(n, d+sign);
     gsl_matrix *Y = gsl_matrix_calloc(r, n);
     gsl_vector *temp = gsl_vector_calloc(r);
-    for(int i=0;i< n*d; ++i){
-        row = i % n;
-        col = floor(i/n);
-        gsl_matrix_set(X, row, col, X_r[i]);
-    }
-    dummy_generation(Y_r, Y, &n);
+    
+    read_matrix(X_r, X, n, d, 0);
+    read_matrix(Y_r, Y, n, r, 1);
     if(sign==1){
         gsl_vector * one = gsl_vector_calloc(n);
         for(int i=0; i<n; ++i)
@@ -95,7 +90,7 @@ void LB_multi_logistic_group_lasso(double* X_r, int*row_r, int*col_r, double*Y_r
         gsl_matrix_sub(Z, W);
         gsl_matrix_memcpy(W, Z);
         gsl_matrix_view W_no_intercept = gsl_matrix_submatrix(W, 0, 0, r, d-sign);
-        shrink_group_matrix(&W_no_intercept.matrix);
+        shrink_column_matrix(&W_no_intercept.matrix);
         gsl_matrix_scale(W, kappa);
         for(int i=0; i<r; ++i)
             for(int j=0; j<d; ++j)
@@ -104,19 +99,16 @@ void LB_multi_logistic_group_lasso(double* X_r, int*row_r, int*col_r, double*Y_r
     }
 }
 
-void LB_multi_logistic_block_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*category, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*group_split, int*group_split_length, int*intercept)
+void LB_multi_logistic_group_lasso(double* X_r, int*row_r, int*col_r, double*Y_r, int*category, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*group_split, int*group_split_length, int*intercept)
 {
-    int row, col, n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
+    int n=*row_r, d=*col_r, r=*category, iter=0, sign=*intercept;
     double kappa = *kappa_r, alpha=*alpha_r;
     gsl_matrix *X = gsl_matrix_calloc(n, d+sign);
     gsl_matrix *Y = gsl_matrix_calloc(r, n);
     gsl_vector *temp = gsl_vector_calloc(r);
-    for(int i=0;i< n*d; ++i){
-        row = i % n;
-        col = floor(i/n);
-        gsl_matrix_set(X, row, col, X_r[i]);
-    }
-    dummy_generation(Y_r, Y, &n);
+    
+    read_matrix(X_r, X, n, d, 0);
+    read_matrix(Y_r, Y, n, r, 1);
     if(sign==1){
         gsl_vector * one = gsl_vector_calloc(n);
         for(int i=0; i<n; ++i)
@@ -141,7 +133,7 @@ void LB_multi_logistic_block_lasso(double* X_r, int*row_r, int*col_r, double*Y_r
         gsl_matrix_sub(Z, W);
         gsl_matrix_memcpy(W, Z);
         gsl_matrix_view W_no_intercept = gsl_matrix_submatrix(W, 0, 0, r, d-sign);
-        shrink_block_matrix_general(&W_no_intercept.matrix, group_split, group_split_length);
+        shrink_group_matrix_general(&W_no_intercept.matrix, group_split, group_split_length);
         gsl_matrix_scale(W, kappa);
         for(int i=0; i<r; ++i)
             for(int j=0; j<d; ++j)

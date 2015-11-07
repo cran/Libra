@@ -41,9 +41,14 @@ void logistic_grad(gsl_vector* v){
         gsl_vector_set(v, i, -1.0/(1+exp(gsl_vector_get(v, i))));
 }
 
-void dummy_generation(double* Y_r, gsl_matrix* Y_dummy, int* n){
-    for(int i=0; i<(*n); ++i)
-        gsl_matrix_set(Y_dummy, Y_r[i], i, 1);
+void read_matrix(double* X, gsl_matrix* Y, int n, int p, int trans){
+    int row, col;
+    for(int i=0;i< n*p; ++i){
+        row = i % n;
+        col = floor(i/n);
+        if(trans==1) {gsl_matrix_set(Y, col,row, X[i]);}
+        else {gsl_matrix_set(Y, row,col, X[i]);}
+    }
 }
 
 void logistic_multi_grad(gsl_matrix* X, gsl_matrix* Y, gsl_matrix* W, gsl_matrix* W_temp){
@@ -74,21 +79,21 @@ void shrink_matrix(gsl_matrix *v, double sigma){
         }
 }
 
-void shrink_group_matrix(gsl_matrix *v){
-    double group_nrm;
+void shrink_column_matrix(gsl_matrix *v){
+    double column_nrm;
     for(int i=0; i<v->size2; ++i){
         gsl_vector_view temp = gsl_matrix_column(v, i);
-        group_nrm = gsl_blas_dnrm2(&temp.vector);
-        if(group_nrm<1)
+        column_nrm = gsl_blas_dnrm2(&temp.vector);
+        if(column_nrm<1)
             gsl_vector_set_zero(&temp.vector);
         else{
-            group_nrm = 1-1/group_nrm;
-            gsl_vector_scale(&temp.vector, group_nrm);
+            column_nrm = 1-1/column_nrm;
+            gsl_vector_scale(&temp.vector, column_nrm);
         }
     }
 }
 
-void shrink_block_matrix_general(gsl_matrix *v,int *group_split, int*group_split_length){
+void shrink_group_matrix_general(gsl_matrix *v,int *group_split, int*group_split_length){
     double block_nrm;
     for(int i=0; i<((*group_split_length)-1); ++i){
         gsl_matrix_view temp = gsl_matrix_submatrix(v, 0, group_split[i], v->size1, group_split[i+1]-group_split[i]);
