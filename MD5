@@ -1,4 +1,4 @@
-fd47a710c38519a48662776255665d30 *DESCRIPTION
+5846fbf3226e36cdadfecf9a472d236a *DESCRIPTION
 71a6ebcfe1af3010a489e904ed0b655a *NAMESPACE
 17add25019277e49fa1ec896d8278e43 *R/cv.iss.R
 6db8c258533b3dc89609653fa5c54622 *R/cv.lb.R
@@ -17,7 +17,7 @@ abf76acdb72aae7559412360fcfda90b *man/lb.Rd
 53718bd6d3e1ca4c64df9750532e0cc7 *src/LBLasso.c
 91f061bc0d8369bdd8dd91d0dcf153b3 *src/LBheader.c
 a5561350d12d96838869cae3fc67d03b *src/LBheader.h
-74ecbf5c813b7c9acb9c42e3afca294a *src/LBlogistic.c
+de3add5e25853af4524bec03d352b8d3 *src/LBlogistic.c
 6b7510bceba6874f0909f529cc54ddfd *src/LBmultilogistic.c
 9b6c74c1e3a9f1b064b963611173ac19 *src/Makevars
 522a983bfa0e72287ffe76f687c36520 *src/Makevars.win
