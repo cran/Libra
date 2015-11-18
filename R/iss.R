@@ -45,32 +45,15 @@
 #'   points(n/lambda,beta[1:100,i],type="l")
 #' }
 #' object = iss(A,b,intercept=FALSE,normalize=FALSE)
-#' attach(object, warn.conflicts= FALSE)
-#' plot(t,path[,1],type="s",xlim=c(0,3),
-#'      ylim=c(min(path),max(path)),xlab="t",ylab=bquote(beta),
-#'      main=bquote("ISS"))
-#' for (j in 2:100){
-#'   points(t,path[,j],type="s")
-#' }
-#' detach(object)
-#' kappa_list = c(1,4,16,64)
+#' plot(object,xlim=c(0,3),main=bquote("ISS"))
+#' kappa_list = c(4,16,64,256)
 #' alpha_list = 1/2/kappa_list
-#' max_step = floor(10*kappa_list)
 #' for (i in 1:4){
 #'   object <- lb(A,b,kappa_list[i],alpha_list[i],family="gaussian",group="ungrouped",
-#'                intercept=FALSE,normalize=FALSE,iter=max_step[i])
-#'   attach(object, warn.conflicts= FALSE)
-#'   plot((0:max_step[i])*alpha,c(0,path[,1]),type="l",xlim=c(0,3),
-#'        ylim=c(min(path),max(path)),xlab="t",ylab=bquote(beta),
-#'        main=bquote(paste("LB ",kappa,"=",.(kappa_list[i]))))
-#'   for (j in 2:100){
-#'     points((0:max_step[i])*alpha,c(0,path[,j]),type="l")
-#'   }
-#'   detach(object)
+#'                trate=20,intercept=FALSE,normalize=FALSE)
+#'   plot(object,xlim=c(0,3),main=bquote(paste("LB ",kappa,"=",.(kappa_list[i]))))
 #' }
 #' dev.off()
-#' 
-#' 
 #' 
 #' 
 
@@ -131,9 +114,9 @@ iss <- function(X, y,intercept = TRUE, normalize = TRUE,nvar = min(dim(X)))
 	}
 	hist_path <- hist_path[seq(i+1), ,drop=FALSE]
 	#re-scale
-	hist_path <- scale(hist_path, FALSE, normx)
-	a0 <- mu - hist_path%*%meanx
-	hist_rho <- hist_rho[seq(i+1), ,drop=FALSE]
+	hist_path <- t(scale(hist_path, FALSE, normx))
+	a0 <- mu - meanx%*%hist_path
+	hist_rho <- t(hist_rho[seq(i+1), ,drop=FALSE])
 	hist_t <- hist_t[seq(i+1)]*n
 	object <- list(call = call, type = c("Lasso", "ungrouped"), kappa = Inf, alpha = 0, path = hist_path, t = hist_t,iter = Inf, normx = normx,meanx = meanx,a0 = a0)
 	class(object) <- "lb"

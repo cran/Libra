@@ -49,12 +49,12 @@ function(object, newx, t, type = c("fit", "coefficients"),...)
     cleft <- (t0[right] - t)/(t0[right] - t0[left])
     if (object$type[1]!= "multilogistic"){
       if (object$kappa == Inf){
-        newbetas <- path[left,]
-        newa0 <- a0[left,]
+        newbetas <- path[,left]
+        newa0 <- a0[left]
       }else{
-        newbetas <- ( cleft*path[left,  , drop = FALSE] +
-                       cright*path[right,  , drop = FALSE])
-        newbetas[left == right,  ] <- path[left[left == right], ]
+        newbetas <- t( cleft*t(path[, left , drop = FALSE])+
+                       cright*t(path[, right , drop = FALSE]))
+        newbetas[,left == right] <- path[,left[left == right]]
         newa0 <- (cleft* a0[left, drop = FALSE] +
                        cright * a0[right, drop = FALSE])
         newa0[left == right] <- a0[left[left == right]]
@@ -62,25 +62,25 @@ function(object, newx, t, type = c("fit", "coefficients"),...)
         newa0 <- drop(newa0)
       }
     }else{
-      newbetas <- lapply(1:length(t), function(x) 
-                    cleft[x]* path[[left[x]]] + cright[x]* path[[right[x]]])
-      newbetas[left == right] <- path[left[left == right]]
-      newa0 <- (cleft * a0[left, , drop = FALSE] +
-                  cright * a0[right, , drop = FALSE])
-      newa0[left == right,] <- a0[left[left == right],]
+      newbetas <- sapply(1:length(t), function(x) 
+                    t(cleft[x]* t(path[,,left[x]]) + cright[x]* t(path[,,right[x]])),simplify = "array")
+      newbetas[,,left == right] <- path[,,left[left == right]]
+      newa0 <- t(cleft*t(a0[,left , drop = FALSE]) +
+              cright*t(a0[, right, drop = FALSE]))
+      newa0[,left == right] <- a0[,left[left == right]]
     }
   }
   if (type == "fit"){
     n <- dim(newx)[1]
     if (object$type[1]=="Lasso")
-      predict <- newx%*%t(newbetas) + rep(1,n)%*%t(newa0)
+      predict <- newx%*%newbetas + matrix(rep(newa0,each=n),nrow=n)
     else if (object$type[1]=="logistic")
-      predict <- 1/(1+exp(-newx%*%t(newbetas) - rep(1,n)%*%t(newa0)))
+      predict <- 1/(1+exp(-newx%*%newbetas - matrix(rep(newa0,each=n),nrow=n)))
     else if(object$type[1]=="multilogistic"){
-      predict <- lapply(1:length(t),function(x)
-        exp(newx%*%t(newbetas[[x]]) + rep(1,n)%*%t(newa0[x,])))
-      predict <- lapply(1:length(t),function(x)
-       (t(scale(t(predict[[x]]), center=FALSE, scale=rowSums(predict[[x]])))))
+      predict <- sapply(1:length(t),function(x)
+        exp(newx%*%t(newbetas[,,x]) + rep(1,n)%*%t(newa0[,x])))
+      predict <- sapply(1:length(t),function(x)
+       (t(scale(t(predict[,,x]), center=FALSE, scale=1/rowSums(predict[,,x])))))
     }
   }
   robject <- switch(type,

@@ -1,6 +1,6 @@
 #' CV for ISS
 #' 
-#' Cross-validation method to tuning the parameter $t$ for ISS.
+#' Cross-validation method to tuning the parameter t for ISS.
 #' 
 #' K-fold cross-validation method is used to tuning the parameter $t$ for ISS.
 #' Mean square error is used as prediction error.

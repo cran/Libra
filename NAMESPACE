@@ -3,7 +3,7 @@ importFrom(utils,packageDescription)
 importFrom(graphics, abline, axis, matplot, title,segments,plot)
 importFrom(stats, approx, predict, var)
 import(nnls)
-export(lb,plot.lb,predict.lb,cv.lb,iss,cv.iss)
+export(lb,plot.lb,predict.lb,cv.lb,iss,cv.iss,ising,potts)
 
 S3method(plot, lb)
 S3method(predict, lb)

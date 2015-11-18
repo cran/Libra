@@ -8,6 +8,7 @@
 #' The intercept term is not ploted
 #' 
 #' @param x lb object
+#' @param xtype  The x-axis type. "t" or "norm". Default is "t".
 #' @param omit.zeros When the number of variables  is much greater than
 #' the number of observations, many coefficients will never be nonzero;
 #' this logical (default \code{TRUE}) avoids plotting these zero coefficents
@@ -18,27 +19,33 @@
 #' @keywords methods
 #'
 
-plot.lb <- function(x,omit.zeros=TRUE,eps= 1e-10,...){
+plot.lb <- function(x,xtype = c("t","norm"),omit.zeros=TRUE,eps= 1e-10,...){
+  xtype <- match.arg(xtype)
   object <- x
 	if (object$type[1]=="multilogistic")
-	  coef <- t(sapply(1:length(object$path),function(x) colSums(abs(object$path[[x]]))))
+	  coef <- sapply(1:dim(object$path)[3],function(x) colSums(abs(object$path[,,x])))
 	else
 	  coef <- object$path
 	if(omit.zeros){
-		c1 <- drop(rep(1, nrow(coef)) %*% abs(coef))
+		c1 <- drop(abs(coef)%*%rep(1, ncol(coef)))
 		nonzeros <- c1 > eps
 		cnums <- seq(nonzeros)[nonzeros]
-		coef <- coef[,nonzeros,drop=FALSE]
-	}else {cnums <- seq(ncol(coef))}
-	stepid <- seq(nrow(coef))
-	s <- apply(abs(coef),1,sum)
-	s <- s/max(s)
+		coef <- coef[nonzeros,,drop=FALSE]
+	}else {cnums <- seq(nrow(coef))}
+	stepid <- seq(ncol(coef))
+	if (xtype=="t")
+	  s <- object$t
+	else if(xtype=="norm"){
+	  s <- apply(abs(coef),2,sum)
+	  s <- s/max(s)
+	}
+	
 	if (object$kappa==Inf)
-	  matplot(s,coef,xlab="Solution-Path",ylab="Coefficients",xlim = c(0,1),ylim = c(min(coef),max(coef)),pch="*",type="s",...)
+	  matplot(s,t(coef),xlab="Solution-Path",ylab="Coefficients",ylim = range(coef),type="s",...)
 	else
-	  matplot(s,coef,xlab="Solution-Path",ylab="Coefficients",xlim = c(0,1),ylim = c(min(coef),max(coef)),pch="*",type="b",...)
-	title(paste(object$type[1],object$type[2],sep="-"), line=3)
+	  matplot(s,t(coef),xlab="Solution-Path",ylab="Coefficients",ylim = range(coef),type="l",...)
+	#title(paste(object$type[1],object$type[2],sep="-"), line=3)
 	abline(h=0, lty=2.5)
 	axis(3, at=s, labels=paste(stepid), cex=.5)
-	axis(4,at=coef[nrow(coef),],labels=paste(cnums),cex=0.8)
+	axis(4,at=coef[,ncol(coef)],labels=paste(cnums),cex=0.8)
 }

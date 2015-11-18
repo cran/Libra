@@ -1,8 +1,8 @@
 #' CV for lb
 #' 
-#' Cross-validation method to tuning the parameter $t$ for lb.
+#' Cross-validation method to tuning the parameter t for lb.
 #' 
-#' K-fold cross-validation method is used to tuning the parameter $t$ for ISS.
+#' K-fold cross-validation method is used to tuning the parameter t for ISS.
 #' Mean square error is used for linear model. Miss-classification error
 #' is used for binomial and multinomial model.
 #' 
@@ -14,7 +14,9 @@
 #' step-length of the discretized solver for the Bregman Inverse Scale Space. 
 #' See details. 
 #' @param K Folds number for CV. Default is 5.
-#' @param t A vector of predecided tuning parameter.
+#' @param tlist Parameters t along the path.
+#' @param nt Number of t. Used only if tlist is missing. Default is 100.
+#' @param trate tmax/tmin. Used only if tlist is missing. Default is 100.
 #' @param family Response type
 #' @param group.type There are three kinds of group type. "Column" is only 
 #' available for multinomial model.
@@ -43,17 +45,17 @@
 #' u_ref[supp_ref] = rnorm(k)
 #' u_ref[supp_ref] = u_ref[supp_ref]+sign(u_ref[supp_ref])
 #' b = as.vector(A%*%u_ref + sigma*rnorm(n))
-#' cv.lb(A,b,10,1/20,intercept = FALSE,normalize = FALSE,iter=300)
+#' cv.lb(A,b,10,1/20,intercept = FALSE,normalize = FALSE)
 #' 
 #' #Simulated data, binomial case
-#' X <- matrix(rnorm(1000*256), nrow=1000, ncol=256)
-#' alpha <- c(rep(1,50), rep(0,206))
-#' y <- 2*as.numeric(runif(1000)<1/(1+exp(-X %*% alpha)))-1
+#' X <- matrix(rnorm(500*100), nrow=500, ncol=100)
+#' alpha <- c(rep(1,30), rep(0,70))
+#' y <- 2*as.numeric(runif(500)<1/(1+exp(-X %*% alpha)))-1
 #' cv.lb(X,y,kappa=5,alpha=1,family="binomial",
-#'              intercept=FALSE,normalize = FALSE,iter=300)
+#'              intercept=FALSE,normalize = FALSE)
 #' 
 
-cv.lb <-function(X, y,kappa,alpha,K = 5, t, family = c("gaussian", "binomial", "multinomial"),
+cv.lb <-function(X, y,kappa,alpha,K = 5, tlist,nt = 100,trate = 100, family = c("gaussian", "binomial", "multinomial"),
                  group.type = c("ungrouped", "grouped", "columned"),intercept = TRUE,
                   normalize = TRUE,plot.it = TRUE, se = TRUE,...)
 {
@@ -81,22 +83,22 @@ cv.lb <-function(X, y,kappa,alpha,K = 5, t, family = c("gaussian", "binomial", "
   
   n <- dim(X)[1]
   folds <- split(sample(1:n), rep(1:K, length = n))
-  if(missing(t)){
-    obj <- lb(X, y, kappa, alpha, family = family, group.type=group.type,
+  if(missing(tlist)){
+    obj <- lb(X, y, kappa, alpha, nt=nt,trate=trate, family = family, group.type=group.type,
               intercept = intercept, normalize=normalize,...)
-    t <- obj$t
+    tlist <- obj$t
   }
   
-  residmat <- matrix(0, length(t), K)
+  residmat <- matrix(0, length(tlist), K)
   for(i in seq(K)) {
     omit <- folds[[i]]
     if (family=="multinomial")
-        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,  ,drop=FALSE], kappa, alpha, family = family, group.type=group.type,
+        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,  ,drop=FALSE], kappa, alpha, tlist,nt=nt,trate=trate,family = family, group.type=group.type,
                 intercept = intercept, normalize=normalize,...)
     else
-        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,drop=FALSE], kappa, alpha, family = family, group.type=group.type,
+        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,drop=FALSE], kappa, alpha,tlist,nt=nt,trate=trate, family = family, group.type=group.type,
                 intercept = intercept, normalize=normalize,...)
-    fit <- predict(fit, X[omit,  ,drop=FALSE], t)$fit
+    fit <- predict(fit, X[omit,  ,drop=FALSE], tlist)$fit
     
     if (family=="multinomial")
         residmat[,i] <- sapply(1:length(t), function(x) sum((y[omit,,drop=FALSE]-(fit[[x]]==apply(fit[[x]],1,max)))^2)/2/length(omit))
@@ -108,14 +110,13 @@ cv.lb <-function(X, y,kappa,alpha,K = 5, t, family = c("gaussian", "binomial", "
   }
   cv.error <- apply(residmat, 1, mean)
   cv.sd <- sqrt(apply(residmat, 1, var)/K)
-  object<-list(t = t, cv.erroe = cv.error, cv.sd = cv.sd)
+  object<-list(t = tlist, cv.erroe = cv.error, cv.sd = cv.sd)
   if (plot.it){
-    plot(t, cv.error,pch="*",type = "b", ylim = range(cv.error, cv.error + cv.sd, 
+    plot(tlist, cv.error,pch="*",type = "b", ylim = range(cv.error, cv.error + cv.sd, 
                                                       cv.error - cv.sd), xlab=("t"),ylab="Cross-Validated MSE")
     if(se)
-      segments(t, cv.error + cv.sd, t, cv.error - cv.sd, col="red")
+      segments(tlist, cv.error + cv.sd, tlist, cv.error - cv.sd, col="red")
   }
-  object
   object
 }
 

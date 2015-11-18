@@ -12,108 +12,157 @@
 #include "LBheader.h"
 
 
-void LB_logistic_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*intercept)
+void LB_logistic_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r,double*alpha0_rate_r, double*result_r, int*intercept,double* t_r,int* nt_r,double* trate_r)
 {
-    int row, col, m = *row_r, n = *col_r, iter=0, sign=*intercept;
-    double kappa = *kappa_r, alpha = *alpha_r,temp = 0;
-    gsl_matrix *A = gsl_matrix_calloc(m, n+sign);
+    int m = *row_r, n = *col_r, iter=0, sign=*intercept,nt=*nt_r, k=0;
+    double kappa = *kappa_r, alpha = *alpha_r,alpha0_rate = *alpha0_rate_r,temp, trate=*trate_r,c_old,c_new;
+    gsl_matrix *A = gsl_matrix_alloc(m, n+sign);
+    gsl_vector *b = gsl_vector_alloc(m);
     
-    for(int i=0;i< m*n; ++i){
-      row = i % m;
-      col = floor(i/m);
-      gsl_matrix_set(A, row, col, A_r[i]*y_r[row]);
-    }
+    read_matrix(A_r, A, m, n, 0);
+    for(int i=0; i<m; ++i)
+        gsl_vector_set(b, i, y_r[i]);
+    
     if(sign==1){
-        for(int i=0; i<m; ++i){
-            gsl_matrix_set(A, i, n, y_r[i]);
-            temp += y_r[i];
-        }
+        gsl_vector * one = gsl_vector_alloc(m);
+        gsl_vector_set_all(one,1);
+        gsl_matrix_set_col(A,n,one);
+        ++n;
+        gsl_blas_ddot(b,one,&temp);
         temp = log((temp+m)/(m-temp));
     }
-    n = (int)A->size2;
+    
     gsl_vector *x      = gsl_vector_calloc(n);
     gsl_vector *z      = gsl_vector_calloc(n);
-    gsl_vector *Ax     = gsl_vector_calloc(m);
-    gsl_vector *g      = gsl_vector_calloc(n);
+    gsl_vector *Ax     = gsl_vector_alloc(m);
+    gsl_vector *g      = gsl_vector_alloc(n);
+    gsl_vector *x_old  = gsl_vector_calloc(n);
+    gsl_vector_view x_no_intercept = gsl_vector_subvector(x, 0, n-sign);
     if(sign==1){
         gsl_vector_set(z,n-1,temp/kappa);
         gsl_vector_set(x,n-1,temp);
     }
-    while(iter < *iter_r){
+    
+    logistic_grad(A,b,x,Ax,g);
+    gsl_vector_view g_no_intercept = gsl_vector_subvector(g, 0, n-sign);
+    int q = gsl_blas_idamax(&g_no_intercept.vector);
+    double t0 = m/fabs(gsl_vector_get(&g_no_intercept.vector,q));
+    gsl_vector_scale(g, t0/m);
+    gsl_vector_sub(z, g);
+    if(t_r[0] < 0)
+      for (int temp=0;temp<nt;++temp)
+        t_r[temp] = t0 *pow(trate,(double)temp/(nt-1));
+    for (int temp=0;temp<nt;++temp)
+      if(t_r[temp]<=t0) ++k;
+      
+    double maxiter = (t_r[nt-1]-t_r[0])/alpha+1;
+
+    while(iter < maxiter){
         
-        gsl_blas_dgemv(CblasNoTrans, 1, A, x, 0, Ax); // Ax = A * x
-        // Calculate the derivative(for both parameters and intercept)
-        logistic_grad(Ax); // Ax now represents the gradient
-        
-        gsl_blas_dgemv(CblasTrans, 1, A, Ax, 0, g); // g = A' Ax
+        logistic_grad(A,b,x,Ax,g); // Ax = -b/(1+exp(b*A*x)); g = A' Ax
         gsl_vector_scale(g, alpha/m);
         gsl_vector_sub(z,g); //update z
         gsl_vector_memcpy(x, z); // use x to do the shrinkage
         
         // shrinkage step
-        gsl_vector_view x_no_intercept = gsl_vector_subvector(x, 0, n-sign);
         shrink(&x_no_intercept.vector, 1); // shrink the paramters only
         gsl_vector_scale(x, kappa);
+        if(sign==1){
+          gsl_vector_set(x,n-1,gsl_vector_get(x,n-1)*alpha0_rate);
+        }
         
         // return the result
-        for(int temp=0;temp<n;++temp)
-            result_r[temp+iter*n] = gsl_vector_get(x, temp);
+        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+          c_old = iter-(t_r[k]-t_r[0])/alpha;
+          c_new = (t_r[k]-t_r[0])/alpha-iter+1;
+          for(int temp=0;temp<n;++temp)
+            result_r[temp+k*n] = gsl_vector_get(x, temp)*c_new+gsl_vector_get(x_old, temp)*c_old;
+          ++k;
+        }
+        if (k>=nt)
+          break;
+        gsl_vector_memcpy(x_old,x);
         // continue iteration
         iter++;
     }
 }
 
-void LB_logistic_group_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r, int*iter_r, double*result_r, int*group_split, int*group_split_length, int*intercept)
+void LB_logistic_group_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, double*alpha_r,double*alpha0_rate_r, double*result_r, int*group_split, int*group_split_length, int*intercept,double* t_r,int* nt_r,double* trate_r)
 {
-    int row, col, m = *row_r, n = *col_r, iter=0, sign=*intercept;
-    double kappa = *kappa_r, alpha = *alpha_r,temp = 0;
-    gsl_matrix *A = gsl_matrix_calloc(m, n+sign);
+    int m = *row_r, n = *col_r, iter=0, sign=*intercept,nt=*nt_r, k=0;
+    double kappa = *kappa_r, alpha = *alpha_r,alpha0_rate = *alpha0_rate_r,temp = 0, trate=*trate_r,c_old,c_new;
+    gsl_matrix *A = gsl_matrix_alloc(m, n+sign);
+    gsl_vector *b = gsl_vector_alloc(m);
     
-    for(int i=0;i< m*n; ++i){
-      row = i % m;
-      col = floor(i/m);
-      gsl_matrix_set(A, row, col, A_r[i]*y_r[row]);
-    }
+    read_matrix(A_r, A, m, n, 0);
+    for(int i=0; i<m; ++i)
+      gsl_vector_set(b, i, y_r[i]);
+    
     if(sign==1){
-        for(int i=0; i<m; ++i){
-            gsl_matrix_set(A, i, n, y_r[i]);
-            temp += y_r[i];
-        }
-        temp = log((temp+m)/(m-temp));
+      gsl_vector * one = gsl_vector_alloc(m);
+      gsl_vector_set_all(one,1);
+      
+      gsl_matrix_set_col(A,n,one);
+      ++n;
+      gsl_blas_ddot(b,one,&temp);
+      temp = log((temp+m)/(m-temp));
     }
-    n = (int)A->size2;
+    
     gsl_vector *x      = gsl_vector_calloc(n);
     gsl_vector *z      = gsl_vector_calloc(n);
-    gsl_vector *Ax     = gsl_vector_calloc(m);
-    gsl_vector *g      = gsl_vector_calloc(n);
+    gsl_vector *Ax     = gsl_vector_alloc(m);
+    gsl_vector *g      = gsl_vector_alloc(n);
+    gsl_vector *x_old  = gsl_vector_calloc(n);
+    gsl_vector_view x_no_intercept = gsl_vector_subvector(x, 0, n-sign);
     if(sign==1){
         gsl_vector_set(z,n-1,temp/kappa);
         gsl_vector_set(x,n-1,temp);
     }
-    while(iter < *iter_r){
+    
+    logistic_grad(A,b,x,Ax,g);
+    gsl_vector *gp_norm = gsl_vector_alloc((*group_split_length)-1);
+    for(int i=0; i<((*group_split_length)-1); ++i){
+      gsl_vector_view group_i = gsl_vector_subvector(g, group_split[i], (group_split[i+1]-group_split[i]));
+      gsl_vector_set(gp_norm,i,gsl_blas_dnrm2(&group_i.vector));
+    }
+    int q = gsl_blas_idamax(gp_norm);
+    double t0 = m/fabs(gsl_vector_get(gp_norm,q));
+    gsl_vector_scale(g, t0/m);
+    gsl_vector_sub(z, g);
+    if(t_r[0] < 0)
+      for (int temp=0;temp<nt;++temp)
+        t_r[temp] = t0 *pow(trate,(double)temp/(nt-1));
+    for (int temp=0;temp<nt;++temp)
+      if(t_r[temp]<=t0) ++k;
+      
+    double maxiter = (t_r[nt-1]-t_r[0])/alpha+1;
+      
+    while(iter < maxiter){
         
-        gsl_blas_dgemv(CblasNoTrans, 1, A, x, 0, Ax); // Ax = A * x
-        // Calculate the derivative(for both parameters and intercept)
-        logistic_grad(Ax); // Ax now represents the gradient
-        
-        gsl_blas_dgemv(CblasTrans, 1, A, Ax, 0, g); // g = A' Ax
+        logistic_grad(A,b,x,Ax,g); // Ax = -b/(1+exp(b*A*x)); g = A' Ax
         gsl_vector_scale(g, alpha/m);
         gsl_vector_sub(z,g); //update z
         gsl_vector_memcpy(x, z); // use x to do the shrinkage
         
         // shrinkage step
-        gsl_vector_view x_no_intercept = gsl_vector_subvector(x, 0, n-sign);
         group_shrink_general(&x_no_intercept.vector, group_split, group_split_length); // shrink the paramters only
         gsl_vector_scale(x, kappa);
+        if(sign==1){
+          gsl_vector_set(x,n-1,gsl_vector_get(x,n-1)*alpha0_rate);
+        }
         
         // return the result
-        for(int temp=0;temp<n;++temp)
-            result_r[temp+iter*n] = gsl_vector_get(x, temp);
+        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+          c_old = iter-(t_r[k]-t_r[0])/alpha;
+          c_new = (t_r[k]-t_r[0])/alpha-iter+1;
+          for(int temp=0;temp<n;++temp)
+            result_r[temp+k*n] = gsl_vector_get(x, temp)*c_new+gsl_vector_get(x_old, temp)*c_old;
+          ++k;
+        }
+        if (k>=nt)
+          break;
+        gsl_vector_memcpy(x_old,x);
         // continue iteration
         iter++;
     }
 }
-
-
-
-
