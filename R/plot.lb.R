@@ -22,7 +22,7 @@
 plot.lb <- function(x,xtype = c("t","norm"),omit.zeros=TRUE,eps= 1e-10,...){
   xtype <- match.arg(xtype)
   object <- x
-	if (object$type[1]=="multilogistic")
+	if (object$family=="multinomial")
 	  coef <- sapply(1:dim(object$path)[3],function(x) colSums(abs(object$path[,,x])))
 	else
 	  coef <- object$path

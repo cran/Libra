@@ -5,9 +5,8 @@
 \title{CV for lb}
 \usage{
 cv.lb(X, y, kappa, alpha, K = 5, tlist, nt = 100, trate = 100,
-  family = c("gaussian", "binomial", "multinomial"),
-  group.type = c("ungrouped", "grouped", "columned"), intercept = TRUE,
-  normalize = TRUE, plot.it = TRUE, se = TRUE, ...)
+  family = c("gaussian", "binomial", "multinomial"), group = FALSE,
+  intercept = TRUE, normalize = TRUE, plot.it = TRUE, se = TRUE, ...)
 }
 \arguments{
 \item{X}{An n-by-p matrix of predictors}
@@ -31,8 +30,7 @@ See details.}
 
 \item{family}{Response type}
 
-\item{group.type}{There are three kinds of group type. "Column" is only 
-available for multinomial model.}
+\item{group}{Whether to use a group penalty, Default is FALSE.}
 
 \item{intercept}{If TRUE, an intercept is included in the model (and not 
 penalized), otherwise no intercept is included. Default is TRUE.}

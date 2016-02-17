@@ -44,49 +44,58 @@ void logistic_multi_grad(gsl_matrix* X, gsl_matrix* Y, gsl_matrix* W, gsl_matrix
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1, W_temp, X, 0, G);// G is gradient
 }
 
-void ising_grad(gsl_matrix* X,gsl_matrix*W,gsl_matrix*G){
+void ising_grad(gsl_matrix* X,gsl_matrix*W,gsl_matrix*W_temp,gsl_matrix*G){
   int n = X->size1, d = W->size1;
-  gsl_vector* temp = gsl_vector_alloc(n);
-  for(int i=0;i<d;++i){
-    gsl_vector_view b = gsl_matrix_column(X,i);
-    gsl_vector_view x = gsl_matrix_row(W,i);
-    gsl_vector_view g = gsl_matrix_row(G,i);
-    logistic_grad(X,&b.vector,&x.vector,temp,&g.vector);
-    gsl_vector_set(&g.vector,i,0);
-  }
-  gsl_matrix_view G_no_inter = gsl_matrix_submatrix(G,0,0,d,d);
-  gsl_matrix* tempG = gsl_matrix_alloc(d,d);
-  gsl_matrix_transpose_memcpy(tempG,&G_no_inter.matrix);
-  gsl_matrix_add(&G_no_inter.matrix,tempG);
-  gsl_vector_free(temp);
-  gsl_matrix_free(tempG);
+  double temp;
+  gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1, W, X, 0, W_temp);
+  for(int i=0;i<d;++i)
+    for(int j=0;j<n;++j){
+      temp = gsl_matrix_get(X, j,i);
+      temp = -temp/(1+exp(temp*gsl_matrix_get(W_temp, i,j)));
+      gsl_matrix_set(W_temp, i,j, temp);
+    }
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, W_temp, X, 0, G);
+  for(int i=0;i<d;++i)
+    gsl_matrix_set(G,i,i,0);
 }
 
-void potts_grad(gsl_matrix* X,gsl_matrix*W,gsl_matrix*G,int *group_split, int*group_split_length){
-  int n = X->size1, d = W->size1,p = W->size2, start, length;
+void ggm_grad(gsl_matrix* S,gsl_matrix*W,gsl_matrix*G){
+  int p = S->size1;
+  gsl_vector* v_temp = gsl_vector_calloc(p);
+  gsl_matrix_get_diag(W,v_temp);
+  gsl_vector_inv(v_temp);
+  gsl_matrix_col_scale_v(W,v_temp);
+  gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1, S, W, 0, G);
+  gsl_matrix_mul_elements(W,G);
+  gsl_vector_scale(v_temp,0.5);
+  gsl_matrix_sub_diag(G,v_temp);
+  gsl_matrix_col_sum(W,v_temp);
+  gsl_vector_scale(v_temp,0.5);
+  gsl_matrix_sub_diag(G,v_temp);
+  gsl_vector_free(v_temp);
+}
+
+void potts_grad(gsl_matrix* X,gsl_matrix*XT,gsl_matrix*W,gsl_matrix*W_temp,gsl_matrix*G,int *group_split, int*group_split_length){
+  int n = X->size1, start, length;
+  gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1, W, X, 0, W_temp);
+  gsl_matrix_exp(W_temp);
   for(int i=0;i<(*group_split_length)-1;++i){
     length = (group_split[i+1]-group_split[i]);
     start = group_split[i];
-    gsl_matrix_view b = gsl_matrix_submatrix(X,0,start,n,length);
-    gsl_matrix* Y = gsl_matrix_alloc(length,n);
-    gsl_matrix* W_temp = gsl_matrix_alloc(length,n);
-    gsl_matrix_transpose_memcpy(Y,&b.matrix);
-    gsl_matrix_view x = gsl_matrix_submatrix(W,start,0,length,p);
-    gsl_matrix_view g = gsl_matrix_submatrix(G,start,0,length,p);
-    logistic_multi_grad(X,Y,&x.matrix,W_temp,&g.matrix);
-    gsl_matrix_view gdiag = gsl_matrix_submatrix(G,start,start,length,length);
-    gsl_matrix_set_zero(&gdiag.matrix);
-    gsl_matrix_free(Y);
-    gsl_matrix_free(W_temp);
+    gsl_matrix_view x = gsl_matrix_submatrix(W_temp,start,0,length,n);
+    gsl_matrix_col_scale(&x.matrix);
   }
-  gsl_matrix_view G_no_inter = gsl_matrix_submatrix(G,0,0,d,d);
-  gsl_matrix* tempG = gsl_matrix_alloc(d,d);
-  gsl_matrix_transpose_memcpy(tempG,&G_no_inter.matrix);
-  gsl_matrix_add(&G_no_inter.matrix,tempG);
-  gsl_matrix_free(tempG);
+  gsl_matrix_sub(W_temp,XT);
+  gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, W_temp, X, 0, G);
+  for(int i=0;i<(*group_split_length)-1;++i){
+    length = (group_split[i+1]-group_split[i]);
+    start = group_split[i];
+    gsl_matrix_view x = gsl_matrix_submatrix(G,start,start,length,length);
+    gsl_matrix_set_all(&x.matrix,0);
+  }
 }
 
-void shrink(gsl_vector *v, double sigma) {
+void shrink_vector(gsl_vector *v, double sigma) {
   double vi;
   for (int i = 0; i < v->size; ++i) {
     vi = gsl_vector_get(v, i);
@@ -96,7 +105,7 @@ void shrink(gsl_vector *v, double sigma) {
   }
 }
 
-void group_shrink_general(gsl_vector* v, int *group_split, int*group_split_length){
+void group_shrink_vector(gsl_vector* v, int *group_split, int*group_split_length){
   for(int i=0; i<((*group_split_length)-1); ++i){
     gsl_vector_view group_i = gsl_vector_subvector(v, group_split[i], (group_split[i+1]-group_split[i]));
     double group_i_norm = gsl_blas_dnrm2(&group_i.vector);
@@ -109,18 +118,27 @@ void group_shrink_general(gsl_vector* v, int *group_split, int*group_split_lengt
   }
 }
 
-void shrink_matrix(gsl_matrix *v, double sigma){
-    double vi;
-    for(int i=0; i<v->size1; ++i)
-        for(int j=0; j<v->size2; ++j){
-            vi = gsl_matrix_get(v, i, j);
-            if(vi > sigma) { gsl_matrix_set(v, i, j, vi-sigma); }
-            else if (vi < -sigma) { gsl_matrix_set(v, i, j, vi+sigma); }
-            else { gsl_matrix_set(v, i, j, 0); }
-        }
+void general_shrink_vector(gsl_vector* v, int *group_split, int*group_split_length){
+  if (*group_split_length==0){
+    shrink_vector(v, 1.0);
+  }else{
+    group_shrink_vector(v, group_split, group_split_length);
+  }
 }
 
-void shrink_column_matrix(gsl_matrix *v){
+void shrink_matrix(gsl_matrix *v, double sigma){
+  double vi;
+  int m = v->size1, n = v->size2;
+  for(int i=0; i<m; ++i)
+    for(int j=0; j<n; ++j){
+      vi = gsl_matrix_get(v, i, j);
+      if(vi > sigma) { gsl_matrix_set(v, i, j, vi-sigma); }
+      else if (vi < -sigma) { gsl_matrix_set(v, i, j, vi+sigma); }
+      else { gsl_matrix_set(v, i, j, 0); }
+    }
+}
+
+void column_shrink_matrix(gsl_matrix *v){
     double column_nrm;
     for(int i=0; i<v->size2; ++i){
         gsl_vector_view temp = gsl_matrix_column(v, i);
@@ -134,7 +152,7 @@ void shrink_column_matrix(gsl_matrix *v){
     }
 }
 
-void shrink_group_matrix_general(gsl_matrix *v,int *group_split, int*group_split_length){
+void group_shrink_matrix(gsl_matrix *v,int *group_split, int*group_split_length){
     double block_nrm;
     for(int i=0; i<((*group_split_length)-1); ++i){
         gsl_matrix_view temp = gsl_matrix_submatrix(v, 0, group_split[i], v->size1, group_split[i+1]-group_split[i]);
@@ -147,8 +165,8 @@ void shrink_group_matrix_general(gsl_matrix *v,int *group_split, int*group_split
         }
     }
 }
-
-void shrink_block_matrix_general(gsl_matrix *v,int *group_split, int*group_split_length){
+  
+void block_shrink_matrix(gsl_matrix *v,int *group_split, int*group_split_length){
   double block_nrm;
   for(int i=0; i<((*group_split_length)-1); ++i){
     for(int j=0; j<((*group_split_length)-1); ++j){
@@ -161,9 +179,29 @@ void shrink_block_matrix_general(gsl_matrix *v,int *group_split, int*group_split
         gsl_matrix_scale(&temp.matrix, block_nrm);
       }
     }
-  } 
+  }
 }
 
+void general_shrink_matrix(gsl_matrix* v, int *group_split, int*group_split_length){
+  if (*group_split_length==0) {shrink_matrix(v, 1.0);}
+  else if (*group_split_length==1) {column_shrink_matrix(v);}
+  else {group_shrink_matrix(v, group_split, group_split_length);}
+}
+  
+void shrink_matrix_offdiag(gsl_matrix *v, double sigma){
+  double vi;
+  int m = v->size1, n = v->size2;
+  for(int i=0; i<m; ++i)
+    for(int j=0; j<n; ++j){
+      if(i!=j){
+        vi = gsl_matrix_get(v, i, j);
+        if(vi > sigma) { gsl_matrix_set(v, i, j, vi-sigma); }
+        else if (vi < -sigma) { gsl_matrix_set(v, i, j, vi+sigma); }
+        else { gsl_matrix_set(v, i, j, 0); }
+      }
+    }
+}
+  
 void gsl_matrix_exp(gsl_matrix* X){
     int m = (int)X->size1;
     int n = (int)X->size2;
@@ -185,6 +223,49 @@ void gsl_matrix_col_scale(gsl_matrix *X){
     double temp_sum = gsl_blas_dasum(&temp.vector);
     gsl_vector_scale(&temp.vector, 1.0/temp_sum);
   }
+}
+
+void gsl_matrix_col_scale_v(gsl_matrix *X,const gsl_vector *v){
+  int n = (int) X->size2;
+  for(int i=0; i<n; ++i){
+    gsl_vector_view temp = gsl_matrix_column(X, i);
+    gsl_vector_scale(&temp.vector, gsl_vector_get(v,i));
+  }
+}
+
+void gsl_matrix_get_diag(const gsl_matrix *X,gsl_vector *v){
+  gsl_vector_const_view diag_X = gsl_matrix_const_diagonal(X);
+  gsl_vector_memcpy(v,&diag_X.vector);
+}
+
+void gsl_matrix_sub_diag(gsl_matrix *X,const gsl_vector *v){
+  gsl_vector_view diag_X = gsl_matrix_diagonal(X);
+  gsl_vector_sub(&diag_X.vector,v);
+}
+
+void gsl_matrix_col_sum(const gsl_matrix *X,gsl_vector *v){
+  int n = (int) X->size2;
+  for(int i=0; i<n; ++i){
+    gsl_vector_const_view temp = gsl_matrix_const_column(X, i);
+    gsl_vector_set(v,i,gsl_vector_sum(&temp.vector));
+  }
+}
+
+double gsl_vector_sum(const gsl_vector* v){
+  int n = (int)v->size;
+  double sum = 0;
+  const size_t stride_v = v->stride;
+  size_t i;
+  for(i=0; i<n; ++i)
+    sum += v->data[i*stride_v];
+  return sum;
+}
+
+void gsl_vector_inv(gsl_vector* v){
+  int n = (int)v->size;
+  const size_t stride_v = v->stride;
+  for(size_t i=0; i<n; ++i)
+    v->data[i*stride_v] = 1/v->data[i*stride_v];
 }
 
 double gsl_matrix_Fnorm(gsl_matrix* X){

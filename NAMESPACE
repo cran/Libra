@@ -1,9 +1,9 @@
 useDynLib("Libra")
 importFrom(utils,packageDescription)
 importFrom(graphics, abline, axis, matplot, title,segments,plot)
-importFrom(stats, approx, predict, var)
+importFrom(stats, approx, predict, var,cov)
 import(nnls)
-export(lb,plot.lb,predict.lb,cv.lb,iss,cv.iss,ising,potts)
+export(lb,plot.lb,predict.lb,cv.lb,iss,cv.iss,ising,potts,ggm)
 
 S3method(plot, lb)
 S3method(predict, lb)

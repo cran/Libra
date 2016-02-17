@@ -18,8 +18,7 @@
 #' @param nt Number of t. Used only if tlist is missing. Default is 100.
 #' @param trate tmax/tmin. Used only if tlist is missing. Default is 100.
 #' @param family Response type
-#' @param group.type There are three kinds of group type. "Column" is only 
-#' available for multinomial model.
+#' @param group Whether to use a group penalty, Default is FALSE.
 #' @param intercept If TRUE, an intercept is included in the model (and not 
 #' penalized), otherwise no intercept is included. Default is TRUE.
 #' @param normalize if TRUE, each variable is scaled to have L2 norm 
@@ -56,11 +55,9 @@
 #' 
 
 cv.lb <-function(X, y,kappa,alpha,K = 5, tlist,nt = 100,trate = 100, family = c("gaussian", "binomial", "multinomial"),
-                 group.type = c("ungrouped", "grouped", "columned"),intercept = TRUE,
-                  normalize = TRUE,plot.it = TRUE, se = TRUE,...)
+                 group = FALSE,intercept = TRUE,normalize = TRUE,plot.it = TRUE, se = TRUE,...)
 {
   family <- match.arg(family)
-  group.type <- match.arg(group.type)
   if (!is.matrix(X)) stop("X must be a matrix!")
   if (family!="multinomial"){
     if (!is.vector(y)) stop("y must be a vector unless in multinomial model!")
@@ -80,11 +77,24 @@ cv.lb <-function(X, y,kappa,alpha,K = 5, tlist,nt = 100,trate = 100, family = c(
     else
       stop("y must be a vector or matrix!")
   }
+  if (group){
+    if (missing(index)){
+      if (family=="multinomial"){
+        index=NA
+      }else{
+        group=FALSE
+        print("Index is missing, using group=FALSE instead!")
+      }
+    }
+    if (!is.vector(index)) stop("Index must be a vector!")
+    if ((length(index) + intercept) != ncol(X))
+      stop("Length of index must be the same as the number of columns of X minus the intercept!")
+  }
   
   n <- dim(X)[1]
   folds <- split(sample(1:n), rep(1:K, length = n))
   if(missing(tlist)){
-    obj <- lb(X, y, kappa, alpha, nt=nt,trate=trate, family = family, group.type=group.type,
+    obj <- lb(X, y, kappa, alpha, nt=nt,trate=trate, family = family, group=group,
               intercept = intercept, normalize=normalize,...)
     tlist <- obj$t
   }
@@ -93,10 +103,10 @@ cv.lb <-function(X, y,kappa,alpha,K = 5, tlist,nt = 100,trate = 100, family = c(
   for(i in seq(K)) {
     omit <- folds[[i]]
     if (family=="multinomial")
-        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,  ,drop=FALSE], kappa, alpha, tlist,nt=nt,trate=trate,family = family, group.type=group.type,
+        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,  ,drop=FALSE], kappa, alpha, tlist,nt=nt,trate=trate,family = family, group=group,
                 intercept = intercept, normalize=normalize,...)
     else
-        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,drop=FALSE], kappa, alpha,tlist,nt=nt,trate=trate, family = family, group.type=group.type,
+        fit <- lb(X[-omit,  ,drop=FALSE], y[-omit,drop=FALSE], kappa, alpha,tlist,nt=nt,trate=trate, family = family, group=group,
                 intercept = intercept, normalize=normalize,...)
     fit <- predict(fit, X[omit,  ,drop=FALSE], tlist)$fit
     

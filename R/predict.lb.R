@@ -47,7 +47,7 @@ function(object, newx, t, type = c("fit", "coefficients"),...)
     right <- ceiling(coord)
     cright <- (t - t0[left])/(t0[right] - t0[left])
     cleft <- (t0[right] - t)/(t0[right] - t0[left])
-    if (object$type[1]!= "multilogistic"){
+    if (object$family!= "multinomial"){
       if (object$kappa == Inf){
         newbetas <- path[,left]
         newa0 <- a0[left]
@@ -72,11 +72,11 @@ function(object, newx, t, type = c("fit", "coefficients"),...)
   }
   if (type == "fit"){
     n <- dim(newx)[1]
-    if (object$type[1]=="Lasso")
+    if (object$family=="gaussian")
       predict <- newx%*%newbetas + matrix(rep(newa0,each=n),nrow=n)
-    else if (object$type[1]=="logistic")
+    else if (object$family=="binomial")
       predict <- 1/(1+exp(-newx%*%newbetas - matrix(rep(newa0,each=n),nrow=n)))
-    else if(object$type[1]=="multilogistic"){
+    else if(object$family=="multinomial"){
       predict <- sapply(1:length(t),function(x)
         exp(newx%*%t(newbetas[,,x]) + rep(1,n)%*%t(newa0[,x])))
       predict <- sapply(1:length(t),function(x)

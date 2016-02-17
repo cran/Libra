@@ -21,7 +21,7 @@ square-root n. Default is TRUE.}
 }
 \value{
 An "LB" class object is returned. The list contains the call, 
- the type, the path, the intercept term a0 and value for alpha, kappa,
+ the family, the path, the intercept term a0 and value for alpha, kappa,
  iter, and meanvalue, scale factor of X, meanx and normx.
 }
 \description{
@@ -38,7 +38,9 @@ lasso-penalty for linear model. It gives the piecewise constant
 #Examples in the reference paper
 library(MASS)
 library(lars)
-n = 200;p = 100;k = 30;sigma = 1
+library(MASS)
+library(lars)
+n = 80;p = 100;k = 30;sigma = 1
 Sigma = 1/(3*p)*matrix(rep(1,p^2),p,p)
 diag(Sigma) = 1
 A = mvrnorm(n, rep(0, p), Sigma)
@@ -48,25 +50,18 @@ u_ref[supp_ref] = rnorm(k)
 u_ref[supp_ref] = u_ref[supp_ref]+sign(u_ref[supp_ref])
 b = as.vector(A\%*\%u_ref + sigma*rnorm(n))
 lasso = lars(A,b,normalize=FALSE,intercept=FALSE,max.steps=100)
-attach(lasso)
-pdf(file="myplot.pdf")
-par(mfrow=c(3,2)) 
-plot(n/lambda,beta[1:100,1],type="l",xlim=c(0,3),ylim=c(min(beta),max(beta)),
-     xlab="t",ylab=bquote(beta),main="Lasso")
-for (i in 2:100){
-  points(n/lambda,beta[1:100,i],type="l")
-}
+par(mfrow=c(3,2))
+matplot(n/lasso$lambda, lasso$beta[1:100,], xlab = bquote(n/lambda), 
+        ylab = "Coefficients", xlim=c(0,3),ylim=c(range(lasso$beta)),type='l', main="Lasso")
 object = iss(A,b,intercept=FALSE,normalize=FALSE)
 plot(object,xlim=c(0,3),main=bquote("ISS"))
 kappa_list = c(4,16,64,256)
-alpha_list = 1/2/kappa_list
+alpha_list = 1/10/kappa_list
 for (i in 1:4){
-  object <- lb(A,b,kappa_list[i],alpha_list[i],family="gaussian",group="ungrouped",
+  object <- lb(A,b,kappa_list[i],alpha_list[i],family="gaussian",group=FALSE,
                trate=20,intercept=FALSE,normalize=FALSE)
   plot(object,xlim=c(0,3),main=bquote(paste("LB ",kappa,"=",.(kappa_list[i]))))
 }
-dev.off()
-
 
 }
 \author{
