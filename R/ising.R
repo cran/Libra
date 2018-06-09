@@ -69,7 +69,7 @@ ising <- function(X, kappa, alpha,c = 2, tlist,responses=c(-1,1),nt = 100,trate 
   
 	intercept <- as.integer(intercept != 0)
 	result_r <- vector(length = nt * p*(p + intercept))
-	solution <- .C("ising",
+	solution <- .C("ising_C",
 		as.numeric(X),
 		as.integer(n),
 		as.integer(p),

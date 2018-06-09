@@ -62,7 +62,7 @@ ggm <- function(X, kappa, alpha, S=NA, c = 2, tlist,nt = 100,trate = 100,print=F
   }
   
 	result_r <- vector(length = nt*p^2)
-	solution <- .C("ggm",
+	solution <- .C("ggm_C",
 		as.numeric(S),
 		as.integer(p),
 		as.numeric(kappa),

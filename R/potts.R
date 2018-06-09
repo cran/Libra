@@ -68,7 +68,7 @@ potts <- function(X, kappa, alpha,c=1, tlist,nt = 100,trate = 100,group=FALSE, i
   group <- as.integer(group != 0)
 	intercept <- as.integer(intercept != 0)
 	result_r <- vector(length = nt * p*(p + intercept))
-	solution <- .C("potts",
+	solution <- .C("potts_C",
 	               as.numeric(XX),
 	               as.integer(n),
 	               as.integer(p),

@@ -12,7 +12,7 @@
 #include <time.h>
 #include "LBheader.h"
 
-void ising(double* X_r, int*row_r, int*col_r, double* kappa_r, double*alpha_r,  double*result_r,int*intercept,double* t_r,int* nt_r,double* trate_r,int*print)
+void ising_C(double* X_r, int*row_r, int*col_r, double* kappa_r, double*alpha_r,  double*result_r,int*intercept,double* t_r,int* nt_r,double* trate_r,int*print)
 {
     int n=*row_r, d=*col_r, iter=0, sign=*intercept,nt=*nt_r,k=0,group_split=0,group_split_length=0;
     double kappa = *kappa_r, alpha=*alpha_r, trate=*trate_r;
@@ -80,7 +80,7 @@ void ising(double* X_r, int*row_r, int*col_r, double* kappa_r, double*alpha_r,  
         gsl_matrix_memcpy(W, Z);
         general_shrink_matrix(&W_no_intercept.matrix, &group_split, &group_split_length);
         gsl_matrix_scale(W, kappa);
-        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+        while (k<nt && iter*alpha >= t_r[k]-t_r[0]){
           gsl_matrix_memcpy(Z_old,Z);
           gsl_matrix_memcpy(tempG,G);
           gsl_matrix_scale(tempG, (t_r[k]-t_r[0])/alpha-iter+1);

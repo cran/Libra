@@ -107,7 +107,7 @@ void LB_multi_logistic(double* X_r, int*row_r, int*col_r, double*Y_r, int*catego
         general_shrink_matrix(&W_no_intercept.matrix, group_split, group_split_length);
         gsl_matrix_scale(W, kappa);
         
-        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+        while (k<nt && iter*alpha >= t_r[k]-t_r[0]){
           gsl_matrix_memcpy(Z_old,Z);
           gsl_matrix_memcpy(G_old,G);
           gsl_matrix_scale(G_old, (t_r[k]-t_r[0])/alpha-iter);

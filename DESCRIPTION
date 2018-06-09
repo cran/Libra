@@ -1,8 +1,8 @@
 Package: Libra
 Type: Package
 Title: Linearized Bregman Algorithms for Generalized Linear Models
-Version: 1.5
-Date: 2016-2-13
+Version: 1.6
+Date: 2018-6-9
 Author: Feng Ruan, Jiechao Xiong and Yuan Yao
 Maintainer: Jiechao Xiong <xiongjiechao@pku.edu.cn>
 Depends: R (>= 3.0), nnls
@@ -16,8 +16,8 @@ Description: Efficient procedures for fitting the regularization path
     Inclusion solver is also provided for linear model with lasso penalty.
 License: GPL-2
 URL: http://arxiv.org/abs/1406.7728
-Packaged: 2016-02-17 06:08:57 UTC; jcxiong
+Packaged: 2018-06-09 12:44:00 UTC; jcxiong
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2016-02-17 14:15:16
+Date/Publication: 2018-06-09 19:48:57 UTC
 RoxygenNote: 5.0.1

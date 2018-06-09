@@ -12,7 +12,7 @@
 #include <time.h>
 #include "LBheader.h"
 
-void ggm(double* S_r, int* p_r, double* kappa_r, double*alpha_r,  double*result_r,double* t_r,int* nt_r,double* trate_r,int*print)
+void ggm_C(double* S_r, int* p_r, double* kappa_r, double*alpha_r,  double*result_r,double* t_r,int* nt_r,double* trate_r,int*print)
 {
     int iter=0,p=*p_r, nt=*nt_r,k=0;
     double kappa = *kappa_r, alpha=*alpha_r, trate=*trate_r;
@@ -66,7 +66,7 @@ void ggm(double* S_r, int* p_r, double* kappa_r, double*alpha_r,  double*result_
         gsl_matrix_memcpy(W, Z);
         shrink_matrix_offdiag(W, 1.0);
         gsl_matrix_scale(W, kappa);
-        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+        while (k<nt && iter*alpha >= t_r[k]-t_r[0]){
           gsl_matrix_memcpy(Z_old,Z);
           gsl_matrix_memcpy(tempG,G);
           gsl_matrix_scale(tempG, (t_r[k]-t_r[0])/alpha-iter+1);

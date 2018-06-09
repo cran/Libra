@@ -13,9 +13,9 @@
 \details{
 It records the appearance of top 10 characters in 408 scenes, the characters who appeared ("1") or not ("0") in each of the scenes. All the character names are in Chinese Pinyin.
 }
-\source{
-  \url{http://math.stanford.edu/~yuany/course/2014.fall/}
-  }
+%\source{
+%  \url{http://math.stanford.edu/~yuany/course/2014.fall/}
+%}
 \references{
 Yuan YAO, A Mathematical Introduction to Data Analysis, Lecture Notes in \emph{Peking University}
 }

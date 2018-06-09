@@ -1,4 +1,4 @@
-useDynLib("Libra")
+useDynLib("Libra", .registration = TRUE)
 importFrom(utils,packageDescription)
 importFrom(graphics, abline, axis, matplot, title,segments,plot)
 importFrom(stats, approx, predict, var,cov)

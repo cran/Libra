@@ -95,7 +95,7 @@ void LB_lasso(double* A_r, int*row_r, int*col_r, double*y_r, double* kappa_r, do
         gsl_vector_scale(x, kappa);
         
         // return the result
-        while (k<nt & iter*alpha >= t_r[k]-t_r[0]){
+        while (k<nt && iter*alpha >= t_r[k]-t_r[0]){
           gsl_vector_memcpy(z_old,z);
           gsl_vector_memcpy(g_old,g);
           gsl_vector_scale(g_old, (t_r[k]-t_r[0])/alpha-iter);
