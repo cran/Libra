@@ -19,7 +19,7 @@
 #'  the family, the path, the intercept term a0 and value for alpha, kappa,
 #'  iter, and meanvalue, scale factor of X, meanx and normx.
 #' @references Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
-#'  Inclusions, \url{http://arxiv.org/abs/1406.7728}
+#'  Inclusions, \url{https://arxiv.org/abs/1406.7728}
 #' @author Feng Ruan, Jiechao Xiong and Yuan Yao
 #' @keywords regression
 #' @examples

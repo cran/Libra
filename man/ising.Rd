@@ -5,8 +5,18 @@
 \title{Linearized Bregman solver for composite conditionally likelihood of Ising model 
  with lasso penalty.}
 \usage{
-ising(X, kappa, alpha, c = 2, tlist, responses = c(-1, 1), nt = 100,
-  trate = 100, intercept = TRUE, print = FALSE)
+ising(
+  X,
+  kappa,
+  alpha,
+  c = 2,
+  tlist,
+  responses = c(-1, 1),
+  nt = 100,
+  trate = 100,
+  intercept = TRUE,
+  print = FALSE
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of variables.}
@@ -68,4 +78,3 @@ edge.width=2*abs(E(g)$weight),main="Ising Model (LB): sparsity=0.51")
 Jiechao Xiong
 }
 \keyword{regression}
-

@@ -4,8 +4,17 @@
 \alias{cv.iss}
 \title{CV for ISS}
 \usage{
-cv.iss(X, y, K = 5, t, intercept = TRUE, normalize = TRUE,
-  plot.it = TRUE, se = TRUE, ...)
+cv.iss(
+  X,
+  y,
+  K = 5,
+  t,
+  intercept = TRUE,
+  normalize = TRUE,
+  plot.it = TRUE,
+  se = TRUE,
+  ...
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of predictors}
@@ -54,12 +63,11 @@ b = as.vector(A\%*\%u_ref + sigma*rnorm(n))
 cv.iss(A,b,intercept = FALSE,normalize = FALSE)
 
 }
+\references{
+Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
+ Inclusions, \url{https://arxiv.org/abs/1406.7728}
+}
 \author{
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
-\references{
-Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
- Inclusions, \url{http://arxiv.org/abs/1406.7728}
-}
 \keyword{Cross-validation}
-

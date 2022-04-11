@@ -40,4 +40,3 @@ The intercept term is not ploted
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
 \keyword{methods}
-

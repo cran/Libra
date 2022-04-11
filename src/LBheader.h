@@ -33,7 +33,7 @@ void block_shrink_matrix(gsl_matrix *v,int *group_split, int*group_split_length)
 void general_shrink_matrix(gsl_matrix *v,int *group_split, int*group_split_length);
 void gsl_matrix_exp(gsl_matrix* X);
 void gsl_vector_log(gsl_vector* v);
-double gsl_vector_sum(const gsl_vector* v);
+double gsl_vector_summation(const gsl_vector* v);
 void gsl_vector_inv(gsl_vector* v);
 void gsl_matrix_col_sum(const gsl_matrix *X,gsl_vector *v);
 void gsl_matrix_get_diag(const gsl_matrix *X,gsl_vector *v);

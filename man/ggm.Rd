@@ -5,8 +5,17 @@
 \title{Linearized Bregman solver for composite conditionally likelihood of Gaussian Graphical
  model with lasso penalty.}
 \usage{
-ggm(X, kappa, alpha, S = NA, c = 2, tlist, nt = 100, trate = 100,
-  print = FALSE)
+ggm(
+  X,
+  kappa,
+  alpha,
+  S = NA,
+  c = 2,
+  tlist,
+  nt = 100,
+  trate = 100,
+  print = FALSE
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of variables.}
@@ -67,4 +76,3 @@ obj$path[,,50]
 Jiechao Xiong
 }
 \keyword{regression}
-

@@ -50,7 +50,7 @@
 #' bonomial, path is a p-by-nt matrix, and for multinomial, path is a k-by-p-by-nt 
 #' array, each dimension represents class, predictor and parameter t.
 #' @references Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
-#'  Inclusions, \url{http://arxiv.org/abs/1406.7728}
+#'  Inclusions, \url{https://arxiv.org/abs/1406.7728}
 #' @author Feng Ruan, Jiechao Xiong and Yuan Yao
 #' @keywords regression
 #' @examples

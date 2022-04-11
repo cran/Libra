@@ -19,7 +19,7 @@
 #' @return A list is returned. The list contains a vector of parameter t, 
 #' crossvalidation error cv.error, and the estimated standard deviation for it cv.sd
 #' @references Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
-#'  Inclusions, \url{http://arxiv.org/abs/1406.7728}
+#'  Inclusions, \url{https://arxiv.org/abs/1406.7728}
 #' @author Feng Ruan, Jiechao Xiong and Yuan Yao
 #' @keywords Cross-validation
 #' @examples

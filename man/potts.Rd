@@ -5,8 +5,18 @@
 \title{Linearized Bregman solver for composite conditionally likelihood of Potts model 
  with lasso penalty and block-group penalty.}
 \usage{
-potts(X, kappa, alpha, c = 1, tlist, nt = 100, trate = 100,
-  group = FALSE, intercept = TRUE, print = FALSE)
+potts(
+  X,
+  kappa,
+  alpha,
+  c = 1,
+  tlist,
+  nt = 100,
+  trate = 100,
+  group = FALSE,
+  intercept = TRUE,
+  print = FALSE
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of variables.}
@@ -62,4 +72,3 @@ obj = potts(X,10,nt=100,trate=10,group=TRUE)
 Jiechao Xiong
 }
 \keyword{regression}
-

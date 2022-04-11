@@ -247,11 +247,11 @@ void gsl_matrix_col_sum(const gsl_matrix *X,gsl_vector *v){
   int n = (int) X->size2;
   for(int i=0; i<n; ++i){
     gsl_vector_const_view temp = gsl_matrix_const_column(X, i);
-    gsl_vector_set(v,i,gsl_vector_sum(&temp.vector));
+    gsl_vector_set(v,i,gsl_vector_summation(&temp.vector));
   }
 }
 
-double gsl_vector_sum(const gsl_vector* v){
+double gsl_vector_summation(const gsl_vector* v){
   int n = (int)v->size;
   double sum = 0;
   const size_t stride_v = v->stride;

@@ -4,9 +4,23 @@
 \alias{cv.lb}
 \title{CV for lb}
 \usage{
-cv.lb(X, y, kappa, alpha, K = 5, tlist, nt = 100, trate = 100,
-  family = c("gaussian", "binomial", "multinomial"), group = FALSE,
-  intercept = TRUE, normalize = TRUE, plot.it = TRUE, se = TRUE, ...)
+cv.lb(
+  X,
+  y,
+  kappa,
+  alpha,
+  K = 5,
+  tlist,
+  nt = 100,
+  trate = 100,
+  family = c("gaussian", "binomial", "multinomial"),
+  group = FALSE,
+  intercept = TRUE,
+  normalize = TRUE,
+  plot.it = TRUE,
+  se = TRUE,
+  ...
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of predictors}
@@ -78,12 +92,11 @@ cv.lb(X,y,kappa=5,alpha=1,family="binomial",
              intercept=FALSE,normalize = FALSE)
 
 }
+\references{
+Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
+ Inclusions, \url{https://arxiv.org/abs/1406.7728}
+}
 \author{
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
-\references{
-Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
- Inclusions, \url{http://arxiv.org/abs/1406.7728}
-}
 \keyword{Cross-validation}
-

@@ -4,8 +4,7 @@
 \alias{plot.lb}
 \title{Plot method for lb objects}
 \usage{
-\method{plot}{lb}(x, xtype = c("t", "norm"), omit.zeros = TRUE,
-  eps = 1e-10, ...)
+\method{plot}{lb}(x, xtype = c("t", "norm"), omit.zeros = TRUE, eps = 1e-10, ...)
 }
 \arguments{
 \item{x}{lb object}
@@ -33,4 +32,3 @@ The intercept term is not ploted
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
 \keyword{methods}
-

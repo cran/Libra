@@ -64,12 +64,11 @@ for (i in 1:4){
 }
 
 }
+\references{
+Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
+ Inclusions, \url{https://arxiv.org/abs/1406.7728}
+}
 \author{
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
-\references{
-Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
- Inclusions, \url{http://arxiv.org/abs/1406.7728}
-}
 \keyword{regression}
-

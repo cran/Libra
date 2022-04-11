@@ -5,9 +5,22 @@
 \title{Linearized Bregman solver for linear, binomial, multinomial models
  with lasso, group lasso or column lasso penalty.}
 \usage{
-lb(X, y, kappa, alpha, c = 1, tlist, nt = 100, trate = 100,
-  family = c("gaussian", "binomial", "multinomial"), group = FALSE,
-  index = NA, intercept = TRUE, normalize = TRUE, print = FALSE)
+lb(
+  X,
+  y,
+  kappa,
+  alpha,
+  c = 1,
+  tlist,
+  nt = 100,
+  trate = 100,
+  family = c("gaussian", "binomial", "multinomial"),
+  group = FALSE,
+  index = NA,
+  intercept = TRUE,
+  normalize = TRUE,
+  print = FALSE
+)
 }
 \arguments{
 \item{X}{An n-by-p matrix of predictors}
@@ -124,12 +137,11 @@ result <- lb(X,y,kappa=5,alpha=0.1,family="multinomial",
 plot(result)
 
 }
+\references{
+Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
+ Inclusions, \url{https://arxiv.org/abs/1406.7728}
+}
 \author{
 Feng Ruan, Jiechao Xiong and Yuan Yao
 }
-\references{
-Ohser, Ruan, Xiong, Yao and Yin, Sparse Recovery via Differential
- Inclusions, \url{http://arxiv.org/abs/1406.7728}
-}
 \keyword{regression}
-
